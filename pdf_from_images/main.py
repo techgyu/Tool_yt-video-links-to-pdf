@@ -1,6 +1,7 @@
 import os
 import sys
 from PIL import Image
+from concurrent.futures import ThreadPoolExecutor
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from settings import INPUT_DIR, OUTPUT_DIR
 
@@ -19,7 +20,6 @@ def main():
     else:
         os.makedirs(OUTPUT_DIR)
 
-    # 하위 폴더가 없는 경우: INPUT_DIR의 이미지 전체를 하나의 PDF로
     has_subdir = any(os.path.isdir(os.path.join(INPUT_DIR, d)) for d in os.listdir(INPUT_DIR))
     image_exts = ('.jpg', '.jpeg', '.png', '.bmp')
 
@@ -33,11 +33,10 @@ def main():
             print(f"{INPUT_DIR}에 이미지 파일이 없습니다.")
         return
 
-    # 하위 폴더가 있는 경우: 각 폴더별로 PDF 생성
-    for folder in sorted(os.listdir(INPUT_DIR)):
+    def process(folder):
         folder_path = os.path.join(INPUT_DIR, folder)
         if not os.path.isdir(folder_path):
-            continue
+            return
         image_files = [os.path.join(folder_path, f) for f in sorted(os.listdir(folder_path)) if f.lower().endswith(image_exts)]
         if image_files:
             pdf_path = os.path.join(OUTPUT_DIR, f"{folder}.pdf")
@@ -45,6 +44,9 @@ def main():
             images_to_pdf(image_files, pdf_path)
         else:
             print(f"{folder_path}에 이미지 파일이 없습니다.")
+
+    with ThreadPoolExecutor() as executor:
+        executor.map(process, sorted(os.listdir(INPUT_DIR)))
 
 if __name__ == "__main__":
     main()

@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 import shutil
+from concurrent.futures import ThreadPoolExecutor
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -37,12 +38,14 @@ def main():
     if not mp4_files:
         print(f"{INPUT_DIR} 및 하위 폴더에 mp4 파일이 없습니다.")
         return
-    for mp4_path in mp4_files:
+    def process(mp4_path):
         print(f"프레임 추출 중: {mp4_path}")
         try:
             extract_frames_from_mp4(mp4_path, OUTPUT_DIR, FRAME_INTERVAL)
         except Exception as e:
             print(f"실패: {mp4_path} -> {e}")
+    with ThreadPoolExecutor() as executor:
+        executor.map(process, mp4_files)
 
 if __name__ == "__main__":
     main()

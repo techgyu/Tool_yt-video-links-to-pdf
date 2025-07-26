@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import os
+from concurrent.futures import ThreadPoolExecutor
 from settings import URLS, OUTPUT_DIR, SOURCE_TYPE
 
 def download_m3u8_to_mp4(m3u8_url, output_path):
@@ -12,6 +13,7 @@ def download_m3u8_to_mp4(m3u8_url, output_path):
         output_path
     ]
     subprocess.run(command, check=True)
+
 def download_youtube_to_mp4(youtube_url, output_path, playlist_mode=False):
     command = [
         "yt-dlp",
@@ -26,7 +28,7 @@ def download_youtube_to_mp4(youtube_url, output_path, playlist_mode=False):
         command.append("--no-playlist")
     subprocess.run(command, check=True)
 
-# 여러 링크를 settings.py에서 받아서 처리
+# 여러 링크를 settings.py에서 받아서 병렬 처리
 
 def main():
     if not URLS or not isinstance(URLS, list):
@@ -39,9 +41,9 @@ def main():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    for idx, url in enumerate(URLS, 1):
+    def process(args):
+        idx, url = args
         if source_type == "youtube":
-            # 재생목록이면 여러 파일이 저장되도록 yt-dlp의 {playlist_index} 템플릿 사용
             output_path = os.path.join(output_dir, f"video_%(playlist_index)s.%(ext)s")
             print(f"유튜브(재생목록 포함) 다운로드 중: {url} -> {output_path}")
             try:
@@ -59,6 +61,9 @@ def main():
                     sys.exit(1)
             except Exception as e:
                 print(f"실패: {url} -> {e}")
+
+    with ThreadPoolExecutor() as executor:
+        executor.map(process, list(enumerate(URLS, 1)))
 
 if __name__ == "__main__":
     main()

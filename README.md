@@ -1,19 +1,22 @@
 # tool_yt-video-links-to-pdf
 
-유튜브/스트리밍(m3u8) 영상 링크 → mp4 다운로드 → 프레임 추출 → PDF 변환까지 자동화하는 파이프라인 도구입니다.
+유튜브/스트리밍(m3u8) 영상 링크 → mp4 다운로드 → 프레임 추출 → 유사 이미지 필터링 → PDF 변환까지 자동화하는 파이프라인 도구입니다.
 
 ## 주요 기능
 - 유튜브(단일/재생목록) 및 m3u8 영상 다운로드 (extract_mp4)
 - mp4 영상에서 프레임 이미지 추출 (extract_frames)
+- 유사 이미지 자동 필터링 (filtered_similiar_image)
 - 이미지들을 PDF로 변환 (pdf_from_images)
 - `run_all.py`로 전체 자동 실행 및 중간 결과 폴더 자동 연결
+- 각 단계별 멀티코어 병렬 처리 지원
 
 ## 폴더 구조
 ```
-extract_mp4/         # 영상 다운로드 (main.py, settings.py)
-extract_frames/      # 프레임 추출 (main.py, settings.py)
-pdf_from_images/     # 이미지 → PDF (main.py, settings.py)
-run_all.py           # 전체 자동 실행 스크립트
+extract_mp4/               # 영상 다운로드 (main.py, settings.py)
+extract_frames/            # 프레임 추출 (main.py, settings.py)
+filtered_similiar_image/   # 유사 이미지 필터링 (main.py, settings.py)
+pdf_from_images/           # 이미지 → PDF (main.py, settings.py)
+run_all.py                 # 전체 자동 실행 스크립트
 ```
 
 ## 사용법
@@ -27,11 +30,17 @@ run_all.py           # 전체 자동 실행 스크립트
    - OUTPUT_DIR: 프레임 이미지 저장 폴더명
    - FRAME_INTERVAL: 프레임 추출 간격(초)
 
-3. **pdf_from_images/settings.py**
+3. **filtered_similiar_image/settings.py**
+   - INPUT_DIR: 원본 이미지 폴더(하위 폴더 포함)
+   - OUTPUT_DIR: 필터링된 이미지 저장 폴더
+   - SIMILARITY_THRESHOLD: 유사 이미지 허용 해밍 거리(0~255)
+   - KEEP_OPTION: 'first', 'middle', 'last' 중 하나 (각 그룹에서 남길 이미지)
+
+4. **pdf_from_images/settings.py**
    - INPUT_DIR: 이미지가 들어있는 폴더(하위 폴더 포함)
    - OUTPUT_DIR: PDF 저장 폴더명
 
-4. **전체 자동 실행**
+5. **전체 자동 실행**
    ```bash
    python run_all.py
    ```
@@ -41,11 +50,15 @@ run_all.py           # 전체 자동 실행 스크립트
 - ffmpeg (시스템에 설치 필요)
     - [공식 다운로드 페이지](https://ffmpeg.org/download.html)에서 OS에 맞는 ffmpeg를 설치하세요.
     - Windows 사용자는 ffmpeg.exe를 받아 환경변수에 등록하거나, 실행 폴더에 두면 됩니다.
-- yt-dlp (pip install yt-dlp)
-- pillow (pip install pillow)
+- Python 패키지: requirements.txt로 설치
+    ```bash
+    pip install -r requirements.txt
+    ```
+    (yt-dlp, pillow, imagehash 포함)
 
 ## 예시
-- 유튜브 재생목록, m3u8 등 다양한 영상 소스를 지원하며, 프레임 추출 및 PDF 변환까지 자동화됩니다.
+- 유튜브 재생목록, m3u8 등 다양한 영상 소스를 지원하며, 프레임 추출, 유사 이미지 필터링, PDF 변환까지 자동화됩니다.
+- 각 단계는 멀티코어 병렬 처리로 빠르게 동작합니다.
 
 ---
 
