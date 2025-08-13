@@ -8,7 +8,7 @@ from settings import INPUT_DIR, OUTPUT_DIR
 def images_to_pdf(image_paths, pdf_path):
     images = [Image.open(p).convert('RGB') for p in image_paths]
     if images:
-        images[0].save(pdf_path, save_all=True, append_images=images[1:])
+        images[0].save(pdf_path, save_all=True, append_images=images[1:], resolution=300)
 
 def main():
     if not os.path.exists(INPUT_DIR):

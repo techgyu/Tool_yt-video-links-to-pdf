@@ -17,20 +17,18 @@ def download_m3u8_to_mp4(m3u8_url, output_path):
 def download_youtube_to_mp4(youtube_url, output_path, playlist_mode=False, quality="best"):
     if quality == "best":
         format_option = "bestvideo+bestaudio/best"
-    else:  # low quality
+    else:
         format_option = "worst[ext=mp4]/worst"
-    
     command = [
         "yt-dlp",
         "-f", format_option,
         "--merge-output-format", "mp4",
         "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "--cookies", "cookies.txt",  # 크롬에서 추출한 cookies.txt 경로
         "-o", output_path,
         youtube_url
     ]
-    if playlist_mode:
-        pass
-    else:
+    if not playlist_mode:
         command.append("--no-playlist")
     subprocess.run(command, check=True)
 
